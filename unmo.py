@@ -1,6 +1,6 @@
-from responder import RandomResponder, WhatResponder
 from random import choice
-
+from responder import RandomResponder, WhatResponder, PatternResponder
+from dictionary import Dictionary
 
 class Unmo:
     """人口無能コアクラス
@@ -13,13 +13,17 @@ class Unmo:
     def __init__(self, name):
         """ 文字列を受け取り、コアインスタンスの名前に設定する。
         'What' Responderインスタンスを作成し、保持する。
+        Dictionaryインスタンスを作成し、保持する。
         """
+        self._dictionary = Dictionary()
+
         self._responders = {
-            'what': WhatResponder('What'),
-            'random': RandomResponder('Random'),
+            'what': WhatResponder('What', self._dictionary),
+            'random': RandomResponder('Random', self._dictionary),
+            'pattern': PatternResponder('Pattern', self._dictionary)
         }
         self._name = name
-        self._responder = self._responders['random']
+        self._responder = self._responders['pattern']
 
     def dialogue(self, text):
         """ ユーザからの入力を受け取り、Responderに処理させた結果を返す。
@@ -35,5 +39,5 @@ class Unmo:
 
     @property
     def responder_name(self):
-        """　保持しているResponderの名前 """
+        """保持しているResponderの名前 """
         return self._responder.name
