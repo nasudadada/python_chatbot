@@ -1,6 +1,7 @@
-from random import choice
+from random import choice, randrange
 from responder import RandomResponder, WhatResponder, PatternResponder
 from dictionary import Dictionary
+
 
 class Unmo:
     """人口無能コアクラス
@@ -27,10 +28,23 @@ class Unmo:
 
     def dialogue(self, text):
         """ ユーザからの入力を受け取り、Responderに処理させた結果を返す。
-        呼び出されるたびにランダムでResponderに切り替える。"""
-        chosen_key = choice(list(self._responders.keys()))
-        self._responder = self._responders[chosen_key]
-        return self._responder.response(text)
+        呼び出されるたびにランダムでResponderを切り替える。
+        入力をDictionaryに学習させる。"""
+        chance = randrange(0, 100)
+        if chance in range(0, 59):
+            self._responder = self._responders['pattern']
+        elif chance in range(60, 89):
+            self._responder = self._responders['random']
+        else:
+            self._responder = self._responders['what']
+
+        response = self._responder.response(text)
+        self._dictionary.study(text)
+        return response
+
+    def save(self):
+        """Dictionaryへの保存を行う。"""
+        self._dictionary.save()
 
     @property
     def name(self):
