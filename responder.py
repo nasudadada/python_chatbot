@@ -1,6 +1,7 @@
-from random import choice
-
 import re
+import morph
+
+from random import choice
 
 
 class Responder:
@@ -30,7 +31,7 @@ class WhatResponder(Responder):
     """AIの応用を制御する思考エンジンクラス
     入力に対して疑問形で聞き返す。"""
 
-    def response(self, text):
+    def response(self, text, _):
         """文字列textを受け取り、'{text}ってなに？'という形式で返す。"""
         return '{}ってなに？'.format(text)
 
@@ -45,7 +46,7 @@ class RandomResponder(Responder):
     プロパティ：RandomResponderオブジェクトの名前
     """
 
-    def response(self, _):
+    def response(self, text, _):
         """ユーザからの入力は受け取るが、使用せずにランダムな応答を返す。"""
         return choice(self._dictionary.random)
 
@@ -55,11 +56,25 @@ class PatternResponder(Responder):
     登録されたパターンに反応し、関連する応答を返す。
     """
 
-    def response(self, text):
+    def response(self, text, _):
         """ユーザーの入力に合致するパターンがあれば、関連するフレーズを返す。"""
         for ptn in self._dictionary.pattern:
             matcher = re.search(ptn['pattern'], text)
             if matcher:
                 chosen_response = choice(ptn['phrases'])
                 return chosen_response.replace('%match%', matcher[0])
+        return choice(self._dictionary.random)
+
+
+class TemplateResponder(Responder):
+    def response(self, _, parts):
+        """形態素解析結果partsに基づいてテンプレートを選択・生成して返す。"""
+        keywords = [word for word, part in parts if morph.is_keyword(part)]
+        count = len(keywords)
+        if count > 0:
+            if count in self._dictionary.template:
+                template = choice(self._dictionary.template[count])
+                for keyword in keywords:
+                    template = template.replace('%noun%', keyword, 1)
+                return template
         return choice(self._dictionary.random)

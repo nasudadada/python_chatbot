@@ -1,6 +1,7 @@
 from random import choice, randrange
-from responder import RandomResponder, WhatResponder, PatternResponder
+from responder import RandomResponder, WhatResponder, PatternResponder, TemplateResponder
 from dictionary import Dictionary
+import morph
 
 
 class Unmo:
@@ -21,7 +22,8 @@ class Unmo:
         self._responders = {
             'what': WhatResponder('What', self._dictionary),
             'random': RandomResponder('Random', self._dictionary),
-            'pattern': PatternResponder('Pattern', self._dictionary)
+            'pattern': PatternResponder('Pattern', self._dictionary),
+            'template': TemplateResponder('Template', self._dictionary)
         }
         self._name = name
         self._responder = self._responders['pattern']
@@ -31,15 +33,18 @@ class Unmo:
         呼び出されるたびにランダムでResponderを切り替える。
         入力をDictionaryに学習させる。"""
         chance = randrange(0, 100)
-        if chance in range(0, 59):
+        if chance in range(0, 39):
             self._responder = self._responders['pattern']
-        elif chance in range(60, 89):
+        elif chance in range(40, 69):
+            self._responder = self._responders['template']
+        elif chance in range(70, 89):
             self._responder = self._responders['random']
         else:
             self._responder = self._responders['what']
 
-        response = self._responder.response(text)
-        self._dictionary.study(text)
+        parts = morph.analyze(text)
+        response = self._responder.response(text, parts)
+        self._dictionary.study(text, parts)
         return response
 
     def save(self):
